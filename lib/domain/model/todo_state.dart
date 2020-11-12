@@ -1,0 +1,1 @@
+enum TodoState { InComplete, Completed }
