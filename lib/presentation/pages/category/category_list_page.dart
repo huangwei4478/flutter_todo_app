@@ -111,6 +111,205 @@ class _CategoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    final viewModel = Provider.of<CategoryViewModel>(context, listen: false);
+    return StreamBuilder(
+      initialData: viewModel.categoriesValue,
+      stream: viewModel.categories,
+      builder: (BuildContext context, AsyncSnapshot<List<Category>> snapshot) {
+        final categories = snapshot.data ?? [];
+        return ScrollConfiguration(
+            behavior: const ScrollBehavior()
+              ..buildViewportChrome(context, null, AxisDirection.down),
+            child: StaggeredGridView.countBuilder(
+                padding: const EdgeInsets.symmetric(
+                    vertical: Dimens.padding16, horizontal: Dimens.padding8),
+                crossAxisCount: 2,
+                itemCount: categories.length,
+                itemBuilder: (BuildContext context, int index) =>
+                    CategoryListItem(categories[index]),
+                staggeredTileBuilder: (int index) =>
+                    const StaggeredTile.fit(1)));
+      },
+    );
+  }
+}
+
+class CategoryListItem extends StatelessWidget {
+  final Category category;
+
+  const CategoryListItem(this.category);
+
+  /// todo maximum display count
+  static const maxDisplayTodosCount = 8;
+
+  @override
+  Widget build(BuildContext context) {
+    final todos = category.todos;
+    todos
+      ..sort((a, b) => a.position.compareTo(b.position))
+      ..sort((a, b) => (a.state.toTable()).compareTo(b.state.toTable()));
+    final displayTodos = [
+      if (todos.length > maxDisplayTodosCount)
+        ...todos.getRange(0, maxDisplayTodosCount)
+      else
+        ...todos
+    ];
+
+    return Card(
+      child: InkWell(
+          onTap: () => showToast('TODO: push to todo page'),
+          child: Ink(
+            child: Padding(
+              padding: const EdgeInsets.all(Dimens.padding16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTitle(context, todos, displayTodos),
+                  _buildIndicator(context, todos, displayTodos),
+                  _buildTodoItems(context, todos, displayTodos),
+                ],
+              ),
+            ),
+          )),
+    );
+  }
+
+  Widget _buildTitle(
+      BuildContext context, List<Todo> todos, List<Todo> displayTodos) {
+    return SizedBox(
+      height: Dimens.viewSize32,
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Text(
+              category?.title ?? '',
+              maxLines: 1,
+              style: Theme.of(context)
+                  .textTheme
+                  .subtitle1
+                  .copyWith(fontWeight: FontWeight.bold),
+            ),
+          ),
+          if (displayTodos.isNotEmpty &&
+              displayTodos
+                      .where((todo) => todo.state == TodoState.Completed)
+                      .length ==
+                  displayTodos.length)
+            GestureDetector(
+              onTap: () => showToast('TODO delete category'),
+              child: Container(
+                padding: const EdgeInsets.all(Dimens.padding8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).accentColor,
+                  borderRadius: BorderRadius.circular(Dimens.radius16),
+                ),
+                child: Text(
+                  'Done',
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle2
+                      .copyWith(fontSize: 10, color: Colors.blueGrey[50]),
+                ),
+              ),
+            )
+          else
+            Text(
+              '${todos.where((todo) => todo.state == TodoState.Completed).length}/${todos.length}',
+              style: Theme.of(context).textTheme.subtitle2,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIndicator(
+      BuildContext context, List<Todo> todos, List<Todo> displayTodos) {
+    return Visibility(
+      visible: displayTodos.isNotEmpty,
+      child: Container(
+        height: Dimens.viewSize16,
+        child: LinearPercentIndicator(
+          padding: const EdgeInsets.only(top: Dimens.padding8),
+          lineHeight: Dimens.viewSize4,
+          progressColor: Theme.of(context).primaryColor,
+          percent: displayTodos.isEmpty
+              ? 0
+              : todos
+                      .where((todo) => todo.state == TodoState.Completed)
+                      .length /
+                  todos.length,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTodoItems(
+      BuildContext context, List<Todo> todos, List<Todo> displayTodos) {
+    return Padding(
+      padding: const EdgeInsets.only(top: Dimens.padding16),
+      child: Column(
+        children: [
+          for (final todo in displayTodos) _buildTodoItem(context, todo),
+          Visibility(
+            visible: todos.length > maxDisplayTodosCount,
+            child: Container(
+              padding: const EdgeInsets.only(
+                left: Dimens.padding4,
+                top: Dimens.padding8,
+                right: Dimens.padding4,
+              ),
+              alignment: Alignment.centerLeft,
+              height: Dimens.viewSize24,
+              child: Text(
+                '+ ${todos.length - maxDisplayTodosCount} Tasks',
+                style: Theme.of(context)
+                    .textTheme
+                    .subtitle2
+                    .copyWith(color: Colors.grey[400]),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTodoItem(BuildContext context, Todo todo) {
+    final isCompleted = todo.state == TodoState.Completed;
+    final titleTextTheme = isCompleted
+        ? Theme.of(context).textTheme.subtitle2.copyWith(
+            color: Theme.of(context).toggleableActiveColor,
+            decoration: TextDecoration.lineThrough)
+        : Theme.of(context).textTheme.subtitle2;
+
+    return SizedBox(
+      height: Dimens.viewSize24,
+      width: double.infinity,
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          SizedBox.fromSize(
+            size: Size.square(Dimens.viewSize20),
+            child: Transform.scale(
+              scale: 0.8,
+              child: Checkbox(
+                value: todo.state == TodoState.Completed,
+                onChanged: null,
+              ),
+            ),
+          ),
+          const SizedBox(width: Dimens.padding8),
+          Expanded(
+            child: Text(
+              '${todo.title}',
+              style: titleTextTheme,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
