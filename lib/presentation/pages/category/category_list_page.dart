@@ -288,7 +288,7 @@ class CategoryListItem extends StatelessWidget {
         child: LinearPercentIndicator(
           padding: const EdgeInsets.only(top: Dimens.padding8),
           lineHeight: Dimens.viewSize4,
-          progressColor: Theme.of(context).primaryColor,
+          progressColor: Theme.of(context).accentColor,
           percent: displayTodos.isEmpty
               ? 0
               : todos

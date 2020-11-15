@@ -302,7 +302,7 @@ class _HeaderContainer extends StatelessWidget {
               padding: const EdgeInsets.only(
                   left: Dimens.padding4, right: Dimens.padding16),
               lineHeight: Dimens.viewSize4,
-              progressColor: Theme.of(context).primaryColor,
+              progressColor: Theme.of(context).accentColor,
               animateFromLastPercent: true,
               animation: true,
               percent: todos.isEmpty
