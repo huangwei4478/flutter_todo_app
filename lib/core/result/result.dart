@@ -9,3 +9,4 @@ abstract class Result<T> with _$Result<T> {
   const factory Result.failure(Exception e) = Failure<T>;
   const factory Result.loading() = Loading<T>;
 }
+

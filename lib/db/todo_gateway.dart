@@ -69,6 +69,41 @@ class TodoGateway {
   ///endregion
 
   ///region todos operation methods
+
+  Future<List<TodoTable>> fetchTodosOf(String categoryId) async {
+    return _fetchTodosOf(database, categoryId);
+  }
+
+  Future<void> upsertTodos(List<TodoTable> todos) async {
+    await database.transaction((txn) async {
+      final batch = txn.batch();
+
+      for (final todo in todos) {
+        if (await _existsTodo(txn, todo)) {
+          await _updateTodo(txn, todo);
+        } else {
+          await _createTodo(txn, todo);
+        }
+      }
+      await batch.commit();
+    });
+  }
+
+  Future<void> deleteTodos(List<TodoTable> todos) async {
+    await database.transaction((txn) async {
+      final batch = txn.batch();
+      for (final todo in todos) {
+        await txn.delete(
+          TodoTable.tableName,
+          where:
+              '${TodoTable.columnCategoryId} = ? and ${TodoTable.columnId} =  ?',
+          whereArgs: <String>[todo.categoryId, todo.id],
+        );
+      }
+      await batch.commit();
+    });
+  }
+
   Future<List<TodoTable>> _fetchTodosOf(
       DatabaseExecutor executor, String categoryId) async {
     final rawTodoTables = await executor.query(TodoTable.tableName,
