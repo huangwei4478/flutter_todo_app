@@ -61,7 +61,7 @@ class TodoGateway {
   Future<bool> _existsCategory(
       DatabaseExecutor executor, CategoryTable category) async {
     final categories = await executor.query(CategoryTable.tableName,
-        where: '${CategoryTable.tableName} = ?',
+        where: '${CategoryTable.columnId} = ?',
         whereArgs: <String>[category.id]);
     return categories.isNotEmpty;
   }
