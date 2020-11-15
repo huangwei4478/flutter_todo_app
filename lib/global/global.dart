@@ -1,5 +1,6 @@
 // dependencies injection
 
+import 'package:flutter_todo_app/presentation/pages/todo/todo_view_model.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_todo_app/domain/usecase/todo_usecase.dart';
 import 'package:flutter_todo_app/db/database_client.dart';
@@ -21,5 +22,7 @@ Future<void> _setupGlobalForInfra() async {
 }
 
 void _setupGlobalForViewModel() {
-  getIt..registerFactory(() => CategoryViewModel(getIt.get<TodoUseCase>()));
+  getIt
+    ..registerFactory(() => CategoryViewModel(getIt.get<TodoUseCase>()))
+    ..registerFactory(() => TodoViewModel(getIt.get<TodoUseCase>()));
 }

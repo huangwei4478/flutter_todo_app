@@ -15,8 +15,10 @@ import 'package:flutter_todo_app/logger.dart';
 import 'package:flutter_todo_app/presentation/navigator/app_navigator.dart';
 import 'package:flutter_todo_app/presentation/pages/base/base_page.dart';
 import 'package:flutter_todo_app/presentation/pages/category/category_list_view_model.dart';
+import 'package:flutter_todo_app/presentation/pages/todo/todo_page_argument.dart';
 import 'package:flutter_todo_app/presentation/res/dimens.dart';
 import 'package:flutter_todo_app/presentation/widget/toast.dart';
+import 'package:flutter_todo_app/presentation/widget/common_alert_dialog.dart';
 
 class CategoryListPage extends StatefulWidget {
   const CategoryListPage();
@@ -49,7 +51,36 @@ class _CategoryListPageState extends State<CategoryListPage> {
     super.dispose();
   }
 
-  void _bindViewModelEvent() {}
+  void _bindViewModelEvent() {
+    viewModel.eventOfFetchCategory.listen((event) {
+      logger.fine('eventOfFetchCategory: $event');
+      if (event is Failure<Complete>) {
+        handleErrorOfFetchCategory(event.e);
+      }
+    }).addTo(compositeSubscription);
+
+    viewModel.eventOfCreateCategory.listen((event) {
+      logger.fine('eventOfCreateCategory: $event');
+      event.maybeWhen(
+        success: (category) async => _pushToTodoPage(category),
+        failure: handleErrorOfCreateCategory,
+        orElse: () {},
+      );
+    }).addTo(compositeSubscription);
+
+    viewModel.eventOfDeleteCategory.listen((event) {
+      logger.fine('eventOfDeleteCategory: $event');
+      if (event is Failure<Complete>) {
+        handleErrorOfDeleteCategory(event.e);
+      }
+    }).addTo(compositeSubscription);
+  }
+
+  Future<void> _pushToTodoPage(Category category) async {
+    await AppNavigator.pushTodoPage(
+        context, TodoPageArgument(category, category.id));
+    viewModel.fetchCategories();
+  }
 
   //region handler error methods
   void handleErrorOfFetchCategory(Exception e) {
@@ -142,6 +173,32 @@ class CategoryListItem extends StatelessWidget {
   /// todo maximum display count
   static const maxDisplayTodosCount = 8;
 
+  /// use category.id as a transitionId for the use of Hero
+  String get transitionId => category.id;
+
+  //region operation methods
+  Future<void> _pushToTodoPage(BuildContext context) async {
+    await AppNavigator.pushTodoPage(
+        context, TodoPageArgument(category, transitionId));
+    context.read<CategoryViewModel>().fetchCategories();
+  }
+
+  void _showConfirmOfDeletingCategoryDialog(BuildContext context) {
+    showCommonAlertDialog(
+      context: context,
+      title: 'want to delete [${category.title}]?',
+      actions: [
+        DialogAction.cancel(),
+        DialogAction.ok(
+          onPressed: () {
+            context.read<CategoryViewModel>().deleteCategory(category);
+          },
+        ),
+      ],
+    );
+  }
+  //endregion
+
   @override
   Widget build(BuildContext context) {
     final todos = category.todos;
@@ -157,7 +214,7 @@ class CategoryListItem extends StatelessWidget {
 
     return Card(
       child: InkWell(
-          onTap: () => showToast('TODO: push to todo page'),
+          onTap: () => _pushToTodoPage(context),
           child: Ink(
             child: Padding(
               padding: const EdgeInsets.all(Dimens.padding16),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_todo_app/presentation/navigator/app_routers.dart';
 import 'package:flutter_todo_app/presentation/pages/category/category_list_page.dart';
+import 'package:flutter_todo_app/presentation/navigator/pageroutebuilder/scale_page_route_builder.dart';
+import 'package:flutter_todo_app/presentation/pages/todo/todo_page.dart';
+import 'package:flutter_todo_app/presentation/pages/todo/todo_page_argument.dart';
 
 class AppNavigator {
   static Widget getHome() => const CategoryListPage();
@@ -14,10 +17,11 @@ class AppNavigator {
     );
   }
 
-  static Future<void> pushTodoPage(BuildContext context) async {
+  static Future<void> pushTodoPage(
+      BuildContext context, TodoPageArgument argument) async {
     return Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const Text("TODO"),
+      FadePageRouteBuilder(
+        page: TodoPage(todoPageArgument: argument),
         settings: RouteSettings(name: AppRoutes.todo.name),
       ),
     );
