@@ -32,7 +32,7 @@ class TodoGateway {
       final batch = txn.batch();
       for (final category in categories) {
         await txn.delete(CategoryTable.tableName,
-            where: '${CategoryTable.tableName} = ?',
+            where: '${CategoryTable.columnId} = ?',
             whereArgs: <String>[category.id]);
       }
       await batch.commit();
