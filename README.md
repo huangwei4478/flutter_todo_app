@@ -27,5 +27,7 @@ flutter build apk --target-platform android-arm64 --split-per-abi
 
 to export 64-bit arm android apk
 
+---
+
 ![screenshot01](./screenshot01.png)
 ![screenshot02](./screenshot02.png)
