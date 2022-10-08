@@ -70,7 +70,7 @@ class CommonAlertDialog extends StatelessWidget {
   }
 
   Widget _buildButton(BuildContext context, DialogAction action) {
-    return FlatButton(
+    return TextButton(
       child: Text(
         action.title,
         style: Theme.of(context).textTheme.subtitle1,

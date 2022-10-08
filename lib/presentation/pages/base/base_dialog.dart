@@ -46,13 +46,13 @@ class BaseDialog extends StatelessWidget {
   List<Widget> _buildButtons(BuildContext context) {
     final localizations = MaterialLocalizations.of(context);
     return [
-      FlatButton(
+      TextButton(
           onPressed: onPressed(DialogAction.cancel),
           child: Text(
             localizations.cancelButtonLabel,
             style: Theme.of(context).textTheme.subtitle1,
           )),
-      FlatButton(
+      TextButton(
         child: Text(
           localizations.okButtonLabel,
           style: Theme.of(context).textTheme.subtitle1,
